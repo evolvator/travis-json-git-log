@@ -25,8 +25,8 @@ suite.add({
 .on('complete', function(event) {
   tb.saveSuite(
     tb.parseSuite(event),
-    function(error) {}  
-  ));
+    function(error) {}
+  );
 })
 .run({ 'async': true });
 ```
