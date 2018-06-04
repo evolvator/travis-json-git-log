@@ -41,6 +41,7 @@ exports.defaultConfig = {
   branch: process.env.RESULTS_BRANCH || 'results',
   repo_slug: process.env.RESULTS_REPO_SLUG || process.env.TRAVIS_REPO_SLUG,
   repo: process.env.RESULTS_REPO,
+  auth: process.env.RESULTS_AUTH
 };
 
 exports.saveSuite = function(
@@ -49,7 +50,7 @@ exports.saveSuite = function(
   config
 ) {
   config = _.defaults(config, defaultConfig);
-  if (!config.repo) config.repo = `https://github.com/${config.repo}.git`;
+  if (!config.repo) config.repo = `https://${config.auth}@github.com/${config.repo}.git`;
   
   tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
     if (error) {
@@ -78,6 +79,15 @@ exports.saveSuite = function(
                 jsonfile.writeFile(filepath, suite, next);
               }
             });
+          },
+          function(next) {
+            git.add('./*', next);
+          },
+          function(next) {
+            git.commit(`results ${process.env.TRAVIS_BUILD_ID}/${process.env.TRAVIS_JOB_ID}/${suite.name}`, next);
+          },
+          function(next) {
+            git.push('oritin', config.branch, next);
           },
           function(next) {
             clean();
