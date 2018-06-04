@@ -60,10 +60,7 @@ exports.saveSuite = function(
       async.series(
         [
           function(next) {
-            git.clone(config.repo, './', next);
-          },
-          function(next) {
-            git.checkoutLocalBranch(config.branch, next);
+            git.clone(config.repo, './', [`-b ${config.branch}`], next);
           },
           function(next) {
             fs.readdir(path, function(error, dir) {
