@@ -50,7 +50,7 @@ exports.saveSuite = function(
   config
 ) {
   config = _.defaults(config, exports.defaultConfig);
-  if (!config.repo) config.repo = `https://${config.auth}@github.com/${config.repo}.git`;
+  if (!config.repo) config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
   
   tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
     if (error) {
