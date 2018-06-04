@@ -15,13 +15,8 @@ Generate json results for [benchmark.js](https://github.com/bestiejs/benchmark.j
 var Benchmark = require('benchmark');
 var tb = require('travis-benchmark');
 
-var suite = new Benchmark.Suite({
-  name: 'suiteName',
-});
-suite.add({
-  name: 'benchmarkName', 
-  fn: function() {},
-})
+var suite = new Benchmark.Suite('suiteName');
+suite.add('benchmarkName', function() {})
 .on('complete', function(event) {
   tb.saveSuite(
     tb.parseSuite(event),
@@ -35,6 +30,7 @@ suite.add({
 
 We recommended to configure this package from bash env. This will allow the js code to focus exclusively on tests.
 
+- `RESULTS_AUTH` required, can be `token` or pair `login:password`
 - `RESULTS_BRANCH` optional name of results branch, default value `results`
 - `RESULTS_REPO_SLUG` optional repo in githab, default value is equal with `TRAVIS_REPO_SLUG`
 - `RESULTS_REPO` optional custom git link, default value `https://github.com/${process.env.RESULTS_REPO}.git`
@@ -48,6 +44,7 @@ tb.saveSuite(
   parsedSuite,
   function(error) {},
   {
+    auth: 'token', // equal to RESULTS_AUTH
     branch: 'results', // equal to RESULTS_BRANCH
     repo_slug: 'user/repo', // equal to RESULTS_REPO_SLUG
     repo: 'http://github.com/user/repo.git', // equal to RESULTS_REPO
