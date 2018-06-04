@@ -14,7 +14,7 @@ exports.parseSuite = function(
 ) {
   var results = [];
   var max = 0;
-  for (var b of event.currentTarget) {
+  for (var b = 0; b < event.currentTarget.length; b++) {
     var result = {
       build: process.env.TRAVIS_BUILD_ID,
       job: process.env.TRAVIS_JOB_ID,
@@ -49,7 +49,7 @@ exports.saveSuite = function(
   callback,
   config
 ) {
-  config = _.defaults(config, defaultConfig);
+  config = _.defaults(config, exports.defaultConfig);
   if (!config.repo) config.repo = `https://${config.auth}@github.com/${config.repo}.git`;
   
   tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
