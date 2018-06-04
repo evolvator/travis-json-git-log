@@ -1,6 +1,7 @@
 {
   "name": "travis-benchmark",
   "version": "0.0.0",
+  "description": "Generate json results for benchmark.js",
   "license": "MIT",
   "scripts": {
     "test": "RESULTS_BRANCH='results' TRAVIS_BUILD_ID='buildId' TRAVIS_JOB_ID='jobId' TRAVIS_REPO_SLUG='evolvator/travis-benchmark' node index.js"

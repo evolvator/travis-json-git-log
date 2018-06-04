@@ -37,10 +37,20 @@ exports.parseSuite = function(
   return results;
 };
 
+exports.defaultConfig = {
+  branch: process.env.RESULTS_BRANCH || 'results',
+  repo_slug: process.env.RESULTS_REPO_SLUG || process.env.TRAVIS_REPO_SLUG,
+  repo: process.env.RESULTS_REPO,
+};
+
 exports.saveSuite = function(
   suite,
   callback,
+  config
 ) {
+  config = _.defaults(config, defaultConfig);
+  if (!config.repo) config.repo = `https://github.com/${config.repo}.git`;
+  
   tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
     if (error) {
       return callback(error);
@@ -49,10 +59,10 @@ exports.saveSuite = function(
       async.series(
         [
           function(next) {
-            git.clone(`https://github.com/${process.env.TRAVIS_REPO_SLUG}.git`, './', next);
+            git.clone(config.repo, './', next);
           },
           function(next) {
-            git.checkoutLocalBranch(process.env.RESULTS_BRANCH, next);
+            git.checkoutLocalBranch(config.branch, next);
           },
           function(next) {
             fs.readdir(path, function(error, dir) {
