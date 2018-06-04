@@ -87,7 +87,7 @@ exports.saveSuite = function(
             git.commit(`results ${process.env.TRAVIS_BUILD_ID}/${process.env.TRAVIS_JOB_ID}/${suite.name}`, next);
           },
           function(next) {
-            git.push('oritin', config.branch, next);
+            git.push('origin', config.branch, next);
           },
           function(next) {
             clean();
