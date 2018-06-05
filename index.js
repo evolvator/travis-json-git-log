@@ -10,7 +10,7 @@ var simpleGit = require('simple-git');
 var tmp = require('tmp');
 
 exports.parseSuite = function(
-  event,
+  event
 ) {
   var results = [];
   var max = 0;
