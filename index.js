@@ -21,7 +21,7 @@ exports.parseSuite = function(
       platform: platform.name,
       version: platform.version,
       layout: platform.layout,
-      os: platform.os,
+      os: platform.os.toString(),
       suite: event.currentTarget.name,
       benchmark: event.currentTarget[b].name,
       speed: parseInt(event.currentTarget[b].hz.toFixed(event.currentTarget[b].hz < 100 ? 2 : 0), 10),
