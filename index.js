@@ -91,7 +91,7 @@ exports.saveSuite = function(
             next();
           },
         ],
-        callback,
+        callback
       );
     }
   });
