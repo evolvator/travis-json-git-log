@@ -83,7 +83,9 @@ exports.saveSuite = function(
             });
           },
           function(next) {
-            fs.link(_filepath, `${path}/last.json`, next);
+            fs.unlink(`${path}/last.json`, () => {
+              fs.link(_filepath, `${path}/last.json`, next);
+            });
           },
           function(next) {
             git.add('./*', next);
