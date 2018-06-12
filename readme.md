@@ -51,3 +51,21 @@ tb.saveSuite(
   }
 ));
 ```
+
+## Results
+
+Result json file will contains:
+
+- build: number
+- job: number
+- platform: string
+- version: string
+- layout: string?
+- os: string
+- suite: string?
+- benchmark: string?
+- speed: number
+- distortion: number
+- sampled: number
+- percent: number
+- error?: string

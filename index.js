@@ -26,8 +26,11 @@ exports.parseSuite = function(
       benchmark: event.currentTarget[b].name,
       speed: parseInt(event.currentTarget[b].hz.toFixed(event.currentTarget[b].hz < 100 ? 2 : 0), 10),
       distortion: event.currentTarget[b].stats.rme.toFixed(2),
-      sampled: event.currentTarget[b].stats.sample.length,
+      sampled: event.currentTarget[b].stats.sample.length
     };
+    if (event.currentTarget[b].error) {
+      result.error = event.currentTarget[b].error.message;
+    }
     if (result.speed > max) max = result.speed;
     results.push(result);
   }
