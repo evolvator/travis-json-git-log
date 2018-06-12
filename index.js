@@ -60,6 +60,7 @@ exports.saveSuite = function(
       return callback(error);
     } else {
       var git = simpleGit(path);
+      var _filepath;
       async.series(
         [
           function(next) {
@@ -70,6 +71,7 @@ exports.saveSuite = function(
               if (error) return next(error);
               var filename = `${process.env.TRAVIS_BUILD_ID}.json`;
               var filepath = `${path}/${filename}`;
+              _filepath = filepath;
               if (_.includes(dir, filename)) {
                 jsonfile.readFile(filepath, function(error, json) {
                   json.push(...suite);
@@ -79,6 +81,9 @@ exports.saveSuite = function(
                 jsonfile.writeFile(filepath, suite, next);
               }
             });
+          },
+          function(next) {
+            fs.link(_filepath, `${path}/last.json`, next);
           },
           function(next) {
             git.add('./*', next);
