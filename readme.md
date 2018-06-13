@@ -30,7 +30,7 @@ suite.add('benchmarkName', function() {})
 
 We recommended to configure this package from bash env. This will allow the js code to focus exclusively on tests.
 
-- `RESULTS_AUTH` required, can be `token` or pair `login:password`
+- `RESULTS_AUTH` can be `token` or pair `login:password`
 - `RESULTS_BRANCH` optional name of results branch, default value `results`
 - `RESULTS_REPO_SLUG` optional repo in githab, default value is equal with `TRAVIS_REPO_SLUG`
 - `RESULTS_REPO` optional custom git link, default value `https://github.com/${process.env.RESULTS_REPO}.git`
@@ -51,6 +51,10 @@ tb.saveSuite(
   }
 ));
 ```
+
+## Condition
+
+If `RESULTS_AUTH` or `config.auth` is not defined, then suite plain results just write into console.
 
 ## Results
 

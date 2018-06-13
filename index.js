@@ -55,54 +55,59 @@ exports.saveSuite = function(
   config = _.defaults(config, exports.defaultConfig);
   if (!config.repo) config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
   
-  tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
-    if (error) {
-      return callback(error);
-    } else {
-      var git = simpleGit(path);
-      var _filepath;
-      async.series(
-        [
-          function(next) {
-            git.clone(config.repo, path, ['-b',config.branch], next);
-          },
-          function(next) {
-            fs.readdir(path, function(error, dir) {
-              if (error) return next(error);
-              var filename = `${process.env.TRAVIS_BUILD_ID}.json`;
-              var filepath = `${path}/${filename}`;
-              _filepath = filepath;
-              if (_.includes(dir, filename)) {
-                jsonfile.readFile(filepath, function(error, json) {
-                  json.push(...suite);
-                  jsonfile.writeFile(filepath, json, next);
-                });
-              } else {
-                jsonfile.writeFile(filepath, suite, next);
-              }
-            });
-          },
-          function(next) {
-            fs.unlink(`${path}/last.json`, () => {
-              fs.link(_filepath, `${path}/last.json`, next);
-            });
-          },
-          function(next) {
-            git.add('./*', next);
-          },
-          function(next) {
-            git.commit(`results ${process.env.TRAVIS_BUILD_ID}/${process.env.TRAVIS_JOB_ID}/${suite.name}`, next);
-          },
-          function(next) {
-            git.push('origin', config.branch, next);
-          },
-          function(next) {
-            clean();
-            next();
-          },
-        ],
-        callback
-      );
-    }
-  });
+  if (config.auth) {
+    tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
+      if (error) {
+        return callback(error);
+      } else {
+        var git = simpleGit(path);
+        var _filepath;
+        async.series(
+          [
+            function(next) {
+              git.clone(config.repo, path, ['-b',config.branch], next);
+            },
+            function(next) {
+              fs.readdir(path, function(error, dir) {
+                if (error) return next(error);
+                var filename = `${process.env.TRAVIS_BUILD_ID}.json`;
+                var filepath = `${path}/${filename}`;
+                _filepath = filepath;
+                if (_.includes(dir, filename)) {
+                  jsonfile.readFile(filepath, function(error, json) {
+                    json.push(...suite);
+                    jsonfile.writeFile(filepath, json, next);
+                  });
+                } else {
+                  jsonfile.writeFile(filepath, suite, next);
+                }
+              });
+            },
+            function(next) {
+              fs.unlink(`${path}/last.json`, () => {
+                fs.link(_filepath, `${path}/last.json`, next);
+              });
+            },
+            function(next) {
+              git.add('./*', next);
+            },
+            function(next) {
+              git.commit(`results ${process.env.TRAVIS_BUILD_ID}/${process.env.TRAVIS_JOB_ID}/${suite.name}`, next);
+            },
+            function(next) {
+              git.push('origin', config.branch, next);
+            },
+            function(next) {
+              clean();
+              next();
+            },
+          ],
+          callback
+        );
+      }
+    });
+  } else {
+    console.log('travis-benchmark: auth is not defined');
+    console.log(suite);
+  }
 };
