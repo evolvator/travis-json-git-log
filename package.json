@@ -1,6 +1,6 @@
 {
   "name": "travis-benchmark",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Generate json results for benchmark.js",
   "license": "MIT",
   "scripts": {

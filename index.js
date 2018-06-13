@@ -118,6 +118,9 @@ exports.saveSuite = function(
 };
 
 exports.wrapSuite = function(suite, callback, config) {
+  suite.on('cycle', function(event) {
+    console.log(String(event.target));
+  });
   suite.on('complete', function(event) {
     exports.saveSuite(
       exports.parseSuite(event),
