@@ -29,7 +29,7 @@ exports.parseSuite = function(
       sampled: event.currentTarget[b].stats.sample.length
     };
     if (event.currentTarget[b].error) {
-      result.error = event.currentTarget[b].error.message;
+      result.error = event.currentTarget[b].error.stack;
     }
     if (result.speed > max) max = result.speed;
     results.push(result);
@@ -44,7 +44,8 @@ exports.defaultConfig = {
   branch: process.env.RESULTS_BRANCH || 'results',
   repo_slug: process.env.RESULTS_REPO_SLUG || process.env.TRAVIS_REPO_SLUG,
   repo: process.env.RESULTS_REPO,
-  auth: process.env.RESULTS_AUTH
+  auth: process.env.RESULTS_AUTH,
+  mute: process.env.RESULTS_MUTE
 };
 
 exports.saveSuite = function(
@@ -58,7 +59,7 @@ exports.saveSuite = function(
   if (config.auth) {
     tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
       if (error) {
-        return callback(error);
+        if (callback) return callback(error);
       } else {
         var git = simpleGit(path);
         var _filepath;
@@ -99,15 +100,31 @@ exports.saveSuite = function(
             },
             function(next) {
               clean();
+              if (!config.mute) console.log(suite);
               next();
             },
           ],
-          callback
+          (error) => {
+            if (callback) callback(error);
+          }
         );
       }
     });
   } else {
-    console.log('travis-benchmark: auth is not defined');
-    console.log(suite);
+    if (!config.mute) console.warn('travis-benchmark: auth is not defined');
+    if (!config.mute) console.log(suite);
+    if (callback) callback();
   }
+};
+
+exports.wrapSuite = function(suite, callback, config) {
+  suite.on('complete', function(event) {
+    exports.saveSuite(
+      exports.parseSuite(event),
+      function(error) {
+        if (callback) callback(error);
+      },
+      config
+    );
+  });
 };

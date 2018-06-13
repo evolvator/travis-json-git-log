@@ -8,8 +8,20 @@ Generate json results for [benchmark.js](https://github.com/bestiejs/benchmark.j
 
 - Dont work outside the travis environment.
 - Write results to `buildId.json` file of `process.env.RESULTS_BRANCH` branch in current or `process.env.RESULTS_REPO_SLUG` git repository. Create file if not exists. 
+- All json reports to the console, if not forbidden. (`RESULTS_MUTE` or `config.mute`)
 
 ## Example
+
+```js
+var Benchmark = require('benchmark');
+var tb = require('travis-benchmark');
+
+var suite = new Benchmark.Suite('suiteName');
+tb.wrapSuite(suite/*, callback, config*/);
+.run({ 'async': true });
+```
+
+or
 
 ```js
 var Benchmark = require('benchmark');
@@ -34,6 +46,7 @@ We recommended to configure this package from bash env. This will allow the js c
 - `RESULTS_BRANCH` optional name of results branch, default value `results`
 - `RESULTS_REPO_SLUG` optional repo in githab, default value is equal with `TRAVIS_REPO_SLUG`
 - `RESULTS_REPO` optional custom git link, default value `https://github.com/${process.env.RESULTS_REPO}.git`
+- `RESULTS_MUTE` optional disable reports to the console
 
 ## Config
 
@@ -48,6 +61,7 @@ tb.saveSuite(
     branch: 'results', // equal to RESULTS_BRANCH
     repo_slug: 'user/repo', // equal to RESULTS_REPO_SLUG
     repo: 'http://github.com/user/repo.git', // equal to RESULTS_REPO
+    mute: false, // equal to RESULTS_MUTE
   }
 ));
 ```
