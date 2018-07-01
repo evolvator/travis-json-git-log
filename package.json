@@ -1,10 +1,11 @@
 {
   "name": "travis-benchmark",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Generate json results for benchmark.js",
   "license": "MIT",
   "scripts": {
-    "test": "RESULTS_BRANCH='results' TRAVIS_BUILD_ID='buildId' TRAVIS_JOB_ID='jobId' TRAVIS_REPO_SLUG='evolvator/travis-benchmark' mocha test.js --timeout 99999"
+    "test":
+      "RESULTS_BRANCH='results' TRAVIS_BUILD_ID='buildId' TRAVIS_JOB_ID='jobId' TRAVIS_REPO_SLUG='evolvator/travis-benchmark' mocha test.js --timeout 99999"
   },
   "dependencies": {
     "async": "^2.6.0",
