@@ -19,9 +19,7 @@ exports.defaultConfig = {
       ? process.env.RESULTS_BRANCH
       : 'results',
   repo_slug:
-    process && process.env && process.env.RESULTS_REPO_SLUG
-      ? process.env.TRAVIS_REPO_SLUG
-      : undefined,
+  process && process.env ? process.env.RESULTS_REPO_SLUG || process.env.TRAVIS_REPO_SLUG : undefined,
   repo:
     process && process.env && process.env.RESULTS_REPO
       ? process.env.RESULTS_REPO
