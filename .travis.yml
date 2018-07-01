@@ -1,0 +1,25 @@
+language: node_js
+
+services:
+- docker
+
+install:
+- npm install
+
+script:
+  - npm run test
+jobs:
+  include:
+      stage: deploy
+      node_js: "10"
+      os: "linux"
+      before_deploy:
+        - git stash --all
+        - npm install
+      deploy:
+        - provider: npm
+          skip_cleanup: true
+          email: "evolvator@protonmail.com"
+          api_key: $NPM_TOKEN
+          on:
+            branch: master
