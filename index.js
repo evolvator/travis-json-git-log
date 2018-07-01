@@ -13,7 +13,39 @@ if (isNode) {
   var tmp = require('tmp');
 }
 
+exports.defaultConfig = {
+  branch:
+    process && process.env && process.env.RESULTS_BRANCH
+      ? process.env.RESULTS_BRANCH
+      : 'results',
+  repo_slug:
+    process && process.env && process.env.RESULTS_REPO_SLUG
+      ? process.env.TRAVIS_REPO_SLUG
+      : undefined,
+  repo:
+    process && process.env && process.env.RESULTS_REPO
+      ? process.env.RESULTS_REPO
+      : undefined,
+  auth:
+    process && process.env && process.env.RESULTS_AUTH
+      ? process.env.RESULTS_AUTH
+      : undefined,
+  mute:
+    process && process.env && process.env.RESULTS_MUTE
+      ? process.env.RESULTS_MUTE
+      : undefined,
+  build:
+    process && process.env && process.env.TRAVIS_BUILD_ID
+      ? process.env.TRAVIS_BUILD_ID
+      : undefined,
+  job:
+    process && process.env && process.env.TRAVIS_JOB_ID
+      ? process.env.TRAVIS_JOB_ID
+      : undefined
+};
+
 exports.parseSuite = function(event, config) {
+  config = _.defaults(config, exports.defaultConfig);
   var results = [];
   var max = 0;
   for (var b = 0; b < event.currentTarget.length; b++) {
@@ -45,37 +77,6 @@ exports.parseSuite = function(event, config) {
     result.percent = Math.round((1 + (result.speed - max) / max) * 100);
   }
   return results;
-};
-
-exports.defaultConfig = {
-  branch:
-    process && process.env && process.env.RESULTS_BRANCH
-      ? process.env.RESULTS_BRANCH
-      : 'results',
-  repo_slug:
-    process && process.env && process.env.RESULTS_REPO_SLUG
-      ? process.env.TRAVIS_REPO_SLUG
-      : undefined,
-  repo:
-    process && process.env && process.env.RESULTS_REPO
-      ? process.env.RESULTS_REPO
-      : undefined,
-  auth:
-    process && process.env && process.env.RESULTS_AUTH
-      ? process.env.RESULTS_AUTH
-      : undefined,
-  mute:
-    process && process.env && process.env.RESULTS_MUTE
-      ? process.env.RESULTS_MUTE
-      : undefined,
-  build:
-    process && process.env && process.env.TRAVIS_BUILD_ID
-      ? process.env.TRAVIS_BUILD_ID
-      : undefined,
-  job:
-    process && process.env && process.env.TRAVIS_JOB_ID
-      ? process.env.TRAVIS_JOB_ID
-      : undefined
 };
 
 exports.saveSuite = function(suite, callback, config) {
