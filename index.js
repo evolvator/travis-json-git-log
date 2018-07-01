@@ -6,7 +6,9 @@ var jsonfile = require('jsonfile');
 var _ = require('lodash');
 var async = require('async');
 
-if (!window) {
+const isNode = platform.name === 'Node.js';
+
+if (isNode) {
   var simpleGit = require('simple-git');
   var tmp = require('tmp');
 }
@@ -81,7 +83,7 @@ exports.saveSuite = function(suite, callback, config) {
   if (!config.repo)
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
 
-  if (!window && config.auth) {
+  if (isNode && config.auth) {
     tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
       if (error) {
         if (callback) return callback(error);
