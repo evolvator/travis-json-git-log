@@ -6,25 +6,30 @@ var jsonfile = require('jsonfile');
 var _ = require('lodash');
 var async = require('async');
 
-var simpleGit = require('simple-git');
-var tmp = require('tmp');
+if (!window) {
+  var simpleGit = require('simple-git');
+  var tmp = require('tmp');
+}
 
-exports.parseSuite = function(
-  event
-) {
+exports.parseSuite = function(event, config) {
   var results = [];
   var max = 0;
   for (var b = 0; b < event.currentTarget.length; b++) {
     var result = {
-      build: process.env.TRAVIS_BUILD_ID,
-      job: process.env.TRAVIS_JOB_ID,
+      build: config.build,
+      job: config.job,
       platform: platform.name,
       version: platform.version,
       layout: platform.layout,
       os: platform.os.toString(),
       suite: event.currentTarget.name,
       benchmark: event.currentTarget[b].name,
-      speed: parseInt(event.currentTarget[b].hz.toFixed(event.currentTarget[b].hz < 100 ? 2 : 0), 10),
+      speed: parseInt(
+        event.currentTarget[b].hz.toFixed(
+          event.currentTarget[b].hz < 100 ? 2 : 0
+        ),
+        10
+      ),
       distortion: event.currentTarget[b].stats.rme.toFixed(2),
       sampled: event.currentTarget[b].stats.sample.length
     };
@@ -41,22 +46,42 @@ exports.parseSuite = function(
 };
 
 exports.defaultConfig = {
-  branch: process.env.RESULTS_BRANCH || 'results',
-  repo_slug: process.env.RESULTS_REPO_SLUG || process.env.TRAVIS_REPO_SLUG,
-  repo: process.env.RESULTS_REPO,
-  auth: process.env.RESULTS_AUTH,
-  mute: process.env.RESULTS_MUTE
+  branch:
+    process && process.env && process.env.RESULTS_BRANCH
+      ? process.env.RESULTS_BRANCH
+      : 'results',
+  repo_slug:
+    process && process.env && process.env.RESULTS_REPO_SLUG
+      ? process.env.TRAVIS_REPO_SLUG
+      : undefined,
+  repo:
+    process && process.env && process.env.RESULTS_REPO
+      ? process.env.RESULTS_REPO
+      : undefined,
+  auth:
+    process && process.env && process.env.RESULTS_AUTH
+      ? process.env.RESULTS_AUTH
+      : undefined,
+  mute:
+    process && process.env && process.env.RESULTS_MUTE
+      ? process.env.RESULTS_MUTE
+      : undefined,
+  build:
+    process && process.env && process.env.TRAVIS_BUILD_ID
+      ? process.env.TRAVIS_BUILD_ID
+      : undefined,
+  job:
+    process && process.env && process.env.TRAVIS_JOB_ID
+      ? process.env.TRAVIS_JOB_ID
+      : undefined
 };
 
-exports.saveSuite = function(
-  suite,
-  callback,
-  config
-) {
+exports.saveSuite = function(suite, callback, config) {
   config = _.defaults(config, exports.defaultConfig);
-  if (!config.repo) config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
-  
-  if (config.auth) {
+  if (!config.repo)
+    config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
+
+  if (!window && config.auth) {
     tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
       if (error) {
         if (callback) return callback(error);
@@ -66,12 +91,12 @@ exports.saveSuite = function(
         async.series(
           [
             function(next) {
-              git.clone(config.repo, path, ['-b',config.branch], next);
+              git.clone(config.repo, path, ['-b', config.branch], next);
             },
             function(next) {
               fs.readdir(path, function(error, dir) {
                 if (error) return next(error);
-                var filename = `${process.env.TRAVIS_BUILD_ID}.json`;
+                var filename = `${config.build}.json`;
                 var filepath = `${path}/${filename}`;
                 _filepath = filepath;
                 if (_.includes(dir, filename)) {
@@ -93,7 +118,10 @@ exports.saveSuite = function(
               git.add('./*', next);
             },
             function(next) {
-              git.commit(`results ${process.env.TRAVIS_BUILD_ID}/${process.env.TRAVIS_JOB_ID}/${suite.name}`, next);
+              git.commit(
+                `results ${config.build}/${config.job}/${suite.name}`,
+                next
+              );
             },
             function(next) {
               git.push('origin', config.branch, next);
@@ -102,9 +130,9 @@ exports.saveSuite = function(
               clean();
               if (!config.mute) console.log(suite);
               next();
-            },
+            }
           ],
-          (error) => {
+          error => {
             if (callback) callback(error);
           }
         );
