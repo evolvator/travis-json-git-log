@@ -47,12 +47,21 @@ We recommended to configure this package from bash env. This will allow the js c
 - `RESULTS_REPO_SLUG` optional repo in githab, default value is equal with `TRAVIS_REPO_SLUG`
 - `RESULTS_REPO` optional custom git link, default value `https://github.com/${process.env.RESULTS_REPO}.git`
 - `RESULTS_MUTE` optional disable reports to the console
+- `TRAVIS_BUILD_ID` optional travis build id
+- `TRAVIS_JOB_ID` optional travis build id
 
 ## Config
 
-You can configure everything from js.
+You can configure everything from js, not only process.env.
 
 ```js
+var parsedSuite = tb.parseSuite(
+  event, 
+  {
+    build: 'build', // equal to TRAVIS_BUILD_ID
+    job: 'rjob', // equal to TRAVIS_JOB_ID
+  }
+);
 tb.saveSuite(
   parsedSuite,
   function(error) {},
