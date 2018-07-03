@@ -13,71 +13,8 @@ if (isNode) {
   var tmp = require('tmp');
 }
 
-exports.defaultConfig = {
-  branch:
-    process && process.env && process.env.RESULTS_BRANCH
-      ? process.env.RESULTS_BRANCH
-      : 'results',
-  repo_slug:
-  process && process.env ? process.env.RESULTS_REPO_SLUG || process.env.TRAVIS_REPO_SLUG : undefined,
-  repo:
-    process && process.env && process.env.RESULTS_REPO
-      ? process.env.RESULTS_REPO
-      : undefined,
-  auth:
-    process && process.env && process.env.RESULTS_AUTH
-      ? process.env.RESULTS_AUTH
-      : undefined,
-  mute:
-    process && process.env && process.env.RESULTS_MUTE
-      ? process.env.RESULTS_MUTE
-      : undefined,
-  build:
-    process && process.env && process.env.TRAVIS_BUILD_ID
-      ? process.env.TRAVIS_BUILD_ID
-      : undefined,
-  job:
-    process && process.env && process.env.TRAVIS_JOB_ID
-      ? process.env.TRAVIS_JOB_ID
-      : undefined
-};
-
-exports.parseSuite = function(event, config) {
-  config = _.defaults(config, exports.defaultConfig);
-  var results = [];
-  var max = 0;
-  for (var b = 0; b < event.currentTarget.length; b++) {
-    var result = {
-      build: config.build,
-      job: config.job,
-      platform: platform.name,
-      version: platform.version,
-      layout: platform.layout,
-      os: platform.os.toString(),
-      suite: event.currentTarget.name,
-      benchmark: event.currentTarget[b].name,
-      speed: parseInt(
-        event.currentTarget[b].hz.toFixed(
-          event.currentTarget[b].hz < 100 ? 2 : 0
-        ),
-        10
-      ),
-      distortion: event.currentTarget[b].stats.rme.toFixed(2),
-      sampled: event.currentTarget[b].stats.sample.length
-    };
-    if (event.currentTarget[b].error) {
-      result.error = event.currentTarget[b].error.stack;
-    }
-    if (result.speed > max) max = result.speed;
-    results.push(result);
-  }
-  for (var result of results) {
-    result.percent = Math.round((1 + (result.speed - max) / max) * 100);
-  }
-  return results;
-};
-
-exports.saveSuite = function(suite, callback, config) {
+module.exports = function(data, callback, config) {
+  var data = typeof(data) === 'string' ? data : JSON.stringify(data);
   config = _.defaults(config, exports.defaultConfig);
   if (!config.repo)
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
@@ -97,16 +34,16 @@ exports.saveSuite = function(suite, callback, config) {
             function(next) {
               fs.readdir(path, function(error, dir) {
                 if (error) return next(error);
-                var filename = `${config.build}.json`;
+                var filename = `${config.filename}.json`;
                 var filepath = `${path}/${filename}`;
                 _filepath = filepath;
                 if (_.includes(dir, filename)) {
                   jsonfile.readFile(filepath, function(error, json) {
-                    json.push(...suite);
+                    json.push(...data);
                     jsonfile.writeFile(filepath, json, next);
                   });
                 } else {
-                  jsonfile.writeFile(filepath, suite, next);
+                  jsonfile.writeFile(filepath, data, next);
                 }
               });
             },
@@ -120,7 +57,7 @@ exports.saveSuite = function(suite, callback, config) {
             },
             function(next) {
               git.commit(
-                `results ${config.build}/${config.job}/${suite.name}`,
+                `${config.commit || `results ${config.filename}`}`,
                 next
               );
             },
@@ -129,7 +66,7 @@ exports.saveSuite = function(suite, callback, config) {
             },
             function(next) {
               clean();
-              if (!config.mute) console.log(suite);
+              if (!config.mute) console.log(data);
               next();
             }
           ],
@@ -140,23 +77,17 @@ exports.saveSuite = function(suite, callback, config) {
       }
     });
   } else {
-    if (!config.mute) console.warn('travis-benchmark: auth is not defined');
-    if (!config.mute) console.log(suite);
+    if (!config.mute) console.warn('travis-json-git-log: auth is not defined');
+    if (!config.mute) console.log(data);
     if (callback) callback();
   }
 };
 
-exports.wrapSuite = function(suite, callback, config) {
-  suite.on('cycle', function(event) {
-    console.log(String(event.target));
-  });
-  suite.on('complete', function(event) {
-    exports.saveSuite(
-      exports.parseSuite(event),
-      function(error) {
-        if (callback) callback(error);
-      },
-      config
-    );
-  });
+module.exports.defaultConfig = {
+  branch: _.get(process, 'env.TJGL_BRANCH') || 'results',
+  repo_slug: _.get(process, 'env.TJGL_REPO_SLUG') || _.get(process, 'env.TRAVIS_REPO_SLUG'),
+  repo: _.get(process, 'env.TJGL_REPO'),
+  auth: _.get(process, 'env.TJGL_AUTH'),
+  mute: _.get(process, 'env.TJGL_MUTE'),
+  filename: _.get(process, 'env.TJGL_FILENAME') || _.get(process, 'env.TRAVIS_BUILD_ID') || `${new Date().valueOf()}`
 };
