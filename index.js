@@ -95,5 +95,5 @@ module.exports.defaultConfig = {
 };
 
 if (module.exports.defaultConfig.data) {
-  tjgl({});
+  module.exports({});
 }
