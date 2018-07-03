@@ -5,6 +5,18 @@ Write json log into git repo.
 [![NPM](https://img.shields.io/npm/v/travis-json-git-log.svg)](https://www.npmjs.com/package/travis-json-git-log)
 [![Build Status](https://travis-ci.org/evolvator/travis-json-git-log.svg?branch=master)](https://travis-ci.org/evolvator/travis-json-git-log)
 
+## Lifecycle
+
+- clone repo
+- find file
+  - if exists, add data to file
+  - if not exists, create file with data
+- add, commit and push
+
+## Usage
+
+### As package.
+
 ```js
 var tjgl = require('travis-json-git-log');
 
@@ -47,7 +59,7 @@ tjgl(
 );
 ```
 
-or just cli usage
+### As CLI command
 
 ```sh
 TJGL_DATA='[{"a":1}]' TJGL_REPO="https://github.com/evolvator/travis-json-git-log.git" node ./node_modules/travis-json-git-log
