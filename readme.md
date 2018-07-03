@@ -14,6 +14,9 @@ tjgl(
     data: [{ a: 1 }, { b: 2 }, { c: 3 }],
     // required object or json string
     // config.data || process.env.TJGL_DATA
+    // if target file dont exists - just write into file
+    // if target file contains object - then just `lodash.extend(file, data)`
+    // if target file is array - then just push data, or concat with array-data
     
     branch: 'results',
     // branch name for save log.
@@ -42,4 +45,10 @@ tjgl(
   // callback optional
   (error) => {},
 );
+```
+
+or hust cli usage
+
+```sh
+TJGL_DATA='[{"a":1}]' TJGL_REPO="https://github.com/evolvator/travis-json-git-log.git" node ./node_modules/travis-json-git-log
 ```

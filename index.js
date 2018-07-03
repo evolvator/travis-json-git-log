@@ -47,8 +47,10 @@ module.exports = function(config, callback) {
               _filepath = filepath;
               if (_.includes(dir, filename)) {
                 jsonfile.readFile(filepath, function(error, json) {
-                  if (_.isArray(config.data)) json.push(...config.data);
-                  else if (_.isObject(config.data)) _.extend(json, config.data);
+                  if (_.isArray(json)) {
+                    if (_.isArray(config.data)) json.push(...config.data);
+                    else json.push(config.data);
+                  } else if (_.isObject(json)) _.extend(json, config.data);
                   else return callback(new Error(`unexpected data type ${typeof(config.data)}`));
                   jsonfile.writeFile(filepath, json, next);
                 });
