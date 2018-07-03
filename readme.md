@@ -47,7 +47,7 @@ tjgl(
 );
 ```
 
-or hust cli usage
+or just cli usage
 
 ```sh
 TJGL_DATA='[{"a":1}]' TJGL_REPO="https://github.com/evolvator/travis-json-git-log.git" node ./node_modules/travis-json-git-log
