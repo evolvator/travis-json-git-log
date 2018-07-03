@@ -15,7 +15,7 @@ Write json log into git repo.
 
 ## Usage
 
-### As package.
+### As package
 
 ```js
 var tjgl = require('travis-json-git-log');
