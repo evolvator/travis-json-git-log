@@ -39,11 +39,12 @@ module.exports = function(config, callback) {
                 _filepath = filepath;
                 if (_.includes(dir, filename)) {
                   jsonfile.readFile(filepath, function(error, json) {
-                    json.push(...data);
+                    if (_.isArray(config.data)) json.push(...config.data);
+                    else if (_.isObject(config.data)) _.extend(json, config.data);
                     jsonfile.writeFile(filepath, json, next);
                   });
                 } else {
-                  jsonfile.writeFile(filepath, data, next);
+                  jsonfile.writeFile(filepath, config.data, next);
                 }
               });
             },
@@ -66,7 +67,7 @@ module.exports = function(config, callback) {
             },
             function(next) {
               clean();
-              if (!config.mute) console.log(data);
+              if (!config.mute) console.log(config.data);
               next();
             }
           ],
@@ -78,7 +79,7 @@ module.exports = function(config, callback) {
     });
   } else {
     if (!config.mute) console.warn('travis-json-git-log: auth is not defined');
-    if (!config.mute) console.log(data);
+    if (!config.mute) console.log(config.data);
     if (callback) callback();
   }
 };
