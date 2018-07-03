@@ -13,9 +13,9 @@ if (isNode) {
   var tmp = require('tmp');
 }
 
-module.exports = function(data, callback, config) {
-  var data = typeof(data) === 'string' ? data : JSON.stringify(data);
+module.exports = function(config, callback) {
   config = _.defaults(config, exports.defaultConfig);
+  config.data = typeof(config.data) === 'string' ? config.data : JSON.stringify(config.data);
   if (!config.repo)
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
 
@@ -84,10 +84,15 @@ module.exports = function(data, callback, config) {
 };
 
 module.exports.defaultConfig = {
+  data: _.get(process, 'env.TJGL_DATA'),
   branch: _.get(process, 'env.TJGL_BRANCH') || 'results',
   repo_slug: _.get(process, 'env.TJGL_REPO_SLUG') || _.get(process, 'env.TRAVIS_REPO_SLUG'),
   repo: _.get(process, 'env.TJGL_REPO'),
   auth: _.get(process, 'env.TJGL_AUTH'),
   mute: _.get(process, 'env.TJGL_MUTE'),
-  filename: _.get(process, 'env.TJGL_FILENAME') || _.get(process, 'env.TRAVIS_BUILD_ID') || `${new Date().valueOf()}`
+  filename: _.get(process, 'env.TJGL_FILENAME') || _.get(process, 'env.TRAVIS_BUILD_ID') || `${new Date().valueOf()}`,
 };
+
+if (module.exports.defaultConfig.data) {
+  tjgl({});
+}
