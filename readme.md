@@ -18,7 +18,7 @@ Write json log into git repo.
 ### As package
 
 ```js
-var tjgl = require('travis-json-git-log');
+var tjgl = require('travis-json-git-log').tjgl;
 
 tjgl(
   // config required
@@ -55,7 +55,7 @@ tjgl(
     // config.filename || process.env.TJGL_FILENAME || process.env.TRAVIS_BUILD_ID || new Date().valueOf()
   },
   // callback optional
-  (error) => {},
+  (error, context, config) => {},
 );
 ```
 

@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "description": "Write json log into git repo.",
   "license": "MIT",
+  "scripts": {
+    "test":
+      "mocha test.js --timeout 99999"
+  },
   "dependencies": {
     "async": "^2.6.0",
     "chai": "^4.1.2",

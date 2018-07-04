@@ -13,8 +13,67 @@ if (isNode) {
   var tmp = require('tmp');
 }
 
-module.exports = function(config, callback) {
-  config = _.defaults(config, module.exports.defaultConfig);
+exports.prepareDir = (context, config) => (next) => {
+  tmp.dir(
+    { unsafeCleanup: true },
+    function(error, path, clean) {
+      if (error) {
+        next(error);
+      } else {
+        context.clean = clean;
+        context.path = path;
+        context.git = simpleGit(path);
+        next();
+      }
+    }
+  );
+};
+
+exports.clone = (context, config) => (next) => {
+  context.git = simpleGit(context.path);
+  context.git.clone(config.repo, context.path, ['-b', config.branch], next);
+};
+
+exports.upsertFile = (context, config) => (next) => {
+  fs.readdir(context.path, (error, dir) => {
+    if (error) return next(error);
+    context.filename = `${config.filename}.json`;
+    context.filepath = `${context.path}/${context.filename}`;
+    if (_.includes(dir, context.filename)) {
+      jsonfile.readFile(context.filepath, function(error, json) {
+        if (_.isArray(json)) {
+          if (_.isArray(config.data)) json.push(...config.data);
+          else json.push(config.data);
+        } else if (_.isObject(json)) _.extend(json, config.data);
+        else return callback(new Error(`unexpected data type ${typeof(config.data)}`));
+        jsonfile.writeFile(context.filepath, json, next);
+      });
+    } else {
+      jsonfile.writeFile(context.filepath, config.data, next);
+    }
+  });
+};
+
+exports.lastLink = (context, config) => (next) => {
+  fs.unlink(`${context.path}/last.json`, () => {
+    fs.link(context.filepath, `${context.path}/last.json`, next);
+  });
+};
+
+exports.add = (context, config) => (next) => context.git.add('./*', next);
+
+exports.commit = (context, config) => (next) => context.git.commit(`${config.commit || `results ${config.filename}`}`, next);
+
+exports.push = (context, config) => (next) => context.git.push('origin', config.branch, next);
+
+exports.clean = (context, config) => (next) => {
+  context.clean();
+  if (!config.mute) console.log(config.data);
+  next();
+}
+
+exports.parseConfig = (config) => {
+  config = _.defaults(config, exports.defaultConfig);
   config.data = typeof(config.data) === 'string' ? JSON.parse(config.data) : config.data;
   if (!isNode) {
     if (!config.mute) console.warn('travis-json-git-log: only on node js side');
@@ -27,70 +86,25 @@ module.exports = function(config, callback) {
     }
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
   }
-
-  tmp.dir({ unsafeCleanup: true }, function(error, path, clean) {
-    if (error) {
-      if (callback) return callback(error);
-    } else {
-      var git = simpleGit(path);
-      var _filepath;
-      async.series(
-        [
-          function(next) {
-            git.clone(config.repo, path, ['-b', config.branch], next);
-          },
-          function(next) {
-            fs.readdir(path, function(error, dir) {
-              if (error) return next(error);
-              var filename = `${config.filename}.json`;
-              var filepath = `${path}/${filename}`;
-              _filepath = filepath;
-              if (_.includes(dir, filename)) {
-                jsonfile.readFile(filepath, function(error, json) {
-                  if (_.isArray(json)) {
-                    if (_.isArray(config.data)) json.push(...config.data);
-                    else json.push(config.data);
-                  } else if (_.isObject(json)) _.extend(json, config.data);
-                  else return callback(new Error(`unexpected data type ${typeof(config.data)}`));
-                  jsonfile.writeFile(filepath, json, next);
-                });
-              } else {
-                jsonfile.writeFile(filepath, config.data, next);
-              }
-            });
-          },
-          function(next) {
-            fs.unlink(`${path}/last.json`, () => {
-              fs.link(_filepath, `${path}/last.json`, next);
-            });
-          },
-          function(next) {
-            git.add('./*', next);
-          },
-          function(next) {
-            git.commit(
-              `${config.commit || `results ${config.filename}`}`,
-              next
-            );
-          },
-          function(next) {
-            git.push('origin', config.branch, next);
-          },
-          function(next) {
-            clean();
-            if (!config.mute) console.log(config.data);
-            next();
-          }
-        ],
-        error => {
-          if (callback) callback(error);
-        }
-      );
-    }
-  });
+  return config;
 };
 
-module.exports.defaultConfig = {
+exports.tjgl = (config, callback) => {
+  config = exports.parseConfig(config);
+  var context = {};
+  async.series([
+    exports.prepareDir(context, config),
+    exports.clone(context, config),
+    exports.upsertFile(context, config),
+    exports.lastLink(context, config),
+    exports.add(context, config),
+    exports.commit(context, config),
+    exports.push(context, config),
+    exports.clean(context, config),
+  ], (error) => callback ? callback(error, context, config) : null);
+};
+
+exports.defaultConfig = {
   data: _.get(process, 'env.TJGL_DATA'),
   branch: _.get(process, 'env.TJGL_BRANCH') || 'results',
   repo_slug: _.get(process, 'env.TJGL_REPO_SLUG') || _.get(process, 'env.TRAVIS_REPO_SLUG'),
@@ -100,6 +114,9 @@ module.exports.defaultConfig = {
   filename: _.get(process, 'env.TJGL_FILENAME') || _.get(process, 'env.TRAVIS_BUILD_ID') || `${new Date().valueOf()}`,
 };
 
-if (module.exports.defaultConfig.data) {
-  module.exports({});
+if (exports.defaultConfig.data) {
+  exports.tjgl({}, (error) => {
+    console.log(error ? error : 'Done.');
+    process.exit();
+  });
 }

@@ -1,0 +1,44 @@
+var assert = require('chai').assert;
+var tjgl = require('./');
+var simpleGit = require('simple-git');
+var tmp = require('tmp');
+var jsonfile = require('jsonfile');
+var async = require('async');
+
+describe('travis-json-git-log', function() {
+  it('lifecycle', function(done) {
+    var config = exports.parseConfig({
+      data: { time: new Date().valueOf() },
+      repo_slug: 'evolvator/travis-json-git-log',
+      filename: 'test'
+    });
+    var context = {};
+    async.series([
+      exports.prepareDir(context, config),
+      exports.clone(context, config),
+      exports.upsertFile(context, config),
+      exports.lastLink(context, config),
+      exports.add(context, config),
+      exports.commit(context, config),
+      exports.push(context, config),
+      exports.clean(context, config),
+    ], (error) => {
+      if (error) throw error;
+      var context = {};
+      async.series([
+        exports.prepareDir(context, config),
+        exports.clone(context, config),
+        (next) => {
+          jsonfile.readFile(context.filepath, function(error, json) {
+            assert.deepEqual(json, config.data);
+            next();
+          });
+        },
+        exports.clean(context, config),
+      ], (error) => {
+        if (error) throw error;
+        done();
+      });
+    });
+  });
+});
