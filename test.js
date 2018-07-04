@@ -7,22 +7,11 @@ var async = require('async');
 
 describe('travis-json-git-log', function() {
   it('lifecycle', function(done) {
-    var config = exports.parseConfig({
+    tjgl.tjgl({
       data: { time: new Date().valueOf() },
       repo_slug: 'evolvator/travis-json-git-log',
       filename: 'test'
-    });
-    var context = {};
-    async.series([
-      exports.prepareDir(context, config),
-      exports.clone(context, config),
-      exports.upsertFile(context, config),
-      exports.lastLink(context, config),
-      exports.add(context, config),
-      exports.commit(context, config),
-      exports.push(context, config),
-      exports.clean(context, config),
-    ], (error) => {
+    }, (error, _context, config) => {
       if (error) throw error;
       var context = {};
       async.series([
