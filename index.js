@@ -51,7 +51,7 @@ exports.upsertFile = (context, config) => (next) => {
         if (_.isArray(config.data)) json.push(...config.data);
         else json.push(config.data);
       } else if (_.isObject(json)) _.extend(json, config.data);
-      else return callback(new Error(`unexpected data type ${typeof(config.data)}`));
+      else return next(new Error(`unexpected data type ${typeof(config.data)}`));
       jsonfile.writeFile(context.filepath, json, next);
     });
   } else {
@@ -81,13 +81,11 @@ exports.parseConfig = (config) => {
   config = _.defaults(config, exports.defaultConfig);
   config.data = typeof(config.data) === 'string' ? JSON.parse(config.data) : config.data;
   if (!isNode) {
-    if (!config.mute) console.warn('travis-json-git-log: only on node js side');
-    if (callback) return callback();
+    throw new Error('travis-json-git-log: only on node js side');
   }
   if (!config.repo) {
     if (!config.auth) {
-      if (!config.mute) console.warn('travis-json-git-log: auth is not defined');
-      if (callback) return callback();
+      throw new Error('travis-json-git-log: auth or repo is not defined');
     }
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
   }
