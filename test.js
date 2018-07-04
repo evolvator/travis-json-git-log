@@ -17,6 +17,7 @@ describe('travis-json-git-log', function() {
       async.series([
         tjgl.prepareDir(context, config),
         tjgl.clone(context, config),
+        tjgl.findFile(context, config),
         (next) => {
           jsonfile.readFile(context.filepath, function(error, json) {
             assert.deepEqual(json, config.data);
