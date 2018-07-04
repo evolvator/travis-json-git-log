@@ -34,24 +34,28 @@ exports.clone = (context, config) => (next) => {
   context.git.clone(config.repo, context.path, ['-b', config.branch], next);
 };
 
-exports.upsertFile = (context, config) => (next) => {
+exports.findFile = (context, config) => (next) => {
   fs.readdir(context.path, (error, dir) => {
     if (error) return next(error);
     context.filename = `${config.filename}.json`;
     context.filepath = `${context.path}/${context.filename}`;
-    if (_.includes(dir, context.filename)) {
-      jsonfile.readFile(context.filepath, function(error, json) {
-        if (_.isArray(json)) {
-          if (_.isArray(config.data)) json.push(...config.data);
-          else json.push(config.data);
-        } else if (_.isObject(json)) _.extend(json, config.data);
-        else return callback(new Error(`unexpected data type ${typeof(config.data)}`));
-        jsonfile.writeFile(context.filepath, json, next);
-      });
-    } else {
-      jsonfile.writeFile(context.filepath, config.data, next);
-    }
+    next();
   });
+};
+
+exports.upsertFile = (context, config) => (next) => {
+  if (_.includes(dir, context.filename)) {
+    jsonfile.readFile(context.filepath, function(error, json) {
+      if (_.isArray(json)) {
+        if (_.isArray(config.data)) json.push(...config.data);
+        else json.push(config.data);
+      } else if (_.isObject(json)) _.extend(json, config.data);
+      else return callback(new Error(`unexpected data type ${typeof(config.data)}`));
+      jsonfile.writeFile(context.filepath, json, next);
+    });
+  } else {
+    jsonfile.writeFile(context.filepath, config.data, next);
+  }
 };
 
 exports.lastLink = (context, config) => (next) => {
@@ -95,6 +99,7 @@ exports.tjgl = (config, callback) => {
   async.series([
     exports.prepareDir(context, config),
     exports.clone(context, config),
+    exports.findFile(context, config),
     exports.upsertFile(context, config),
     exports.lastLink(context, config),
     exports.add(context, config),
