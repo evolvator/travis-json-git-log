@@ -1,11 +1,10 @@
 {
   "name": "travis-json-git-log",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Write json log into git repo.",
   "license": "MIT",
   "scripts": {
-    "test":
-      "mocha test.js --timeout 99999"
+    "test": "mocha test.js --timeout 99999"
   },
   "dependencies": {
     "async": "^2.6.0",

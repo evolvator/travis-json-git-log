@@ -73,7 +73,6 @@ exports.push = (context, config) => (next) => context.git.push('origin', config.
 
 exports.clean = (context, config) => (next) => {
   context.clean();
-  if (!config.mute) console.log(config.data);
   next();
 }
 
