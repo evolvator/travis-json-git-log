@@ -15,15 +15,15 @@ describe('travis-json-git-log', function() {
       if (error) throw error;
       var context = {};
       async.series([
-        exports.prepareDir(context, config),
-        exports.clone(context, config),
+        tjgl.prepareDir(context, config),
+        tjgl.clone(context, config),
         (next) => {
           jsonfile.readFile(context.filepath, function(error, json) {
             assert.deepEqual(json, config.data);
             next();
           });
         },
-        exports.clean(context, config),
+        tjgl.clean(context, config),
       ], (error) => {
         if (error) throw error;
         done();
