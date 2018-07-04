@@ -37,6 +37,7 @@ exports.clone = (context, config) => (next) => {
 exports.findFile = (context, config) => (next) => {
   fs.readdir(context.path, (error, dir) => {
     if (error) return next(error);
+    context.dir = dir;
     context.filename = `${config.filename}.json`;
     context.filepath = `${context.path}/${context.filename}`;
     next();
@@ -44,7 +45,7 @@ exports.findFile = (context, config) => (next) => {
 };
 
 exports.upsertFile = (context, config) => (next) => {
-  if (_.includes(dir, context.filename)) {
+  if (_.includes(context.dir, context.filename)) {
     jsonfile.readFile(context.filepath, function(error, json) {
       if (_.isArray(json)) {
         if (_.isArray(config.data)) json.push(...config.data);
