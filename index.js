@@ -80,11 +80,11 @@ exports.parseConfig = (config) => {
   config = _.defaults(config, exports.defaultConfig);
   config.data = typeof(config.data) === 'string' ? JSON.parse(config.data) : config.data;
   if (!isNode) {
-    throw new Error('travis-json-git-log: only on node js side');
+    console.warn('travis-json-git-log: only on node js side');
   }
   if (!config.repo) {
     if (!config.auth) {
-      throw new Error('travis-json-git-log: auth or repo is not defined');
+      console.warn('travis-json-git-log: auth or repo is not defined');
     }
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
   }
