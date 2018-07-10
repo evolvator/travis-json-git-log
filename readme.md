@@ -53,6 +53,12 @@ tjgl(
     filename: `${new Date().valueOf()}`,
     // optional, default timestamp
     // config.filename || process.env.TJGL_FILENAME || process.env.TRAVIS_BUILD_ID || new Date().valueOf()
+
+    error: undefined,
+    // optional
+    // if exists, stops execution with console log and callback
+    // if repo or repo_slug+auth not founded, auto fill
+    // config.error || process.env.TJGL_ERROR
   },
   // callback optional
   (error, context, config) => {},

@@ -80,11 +80,15 @@ exports.parseConfig = (config) => {
   config = _.defaults(config, exports.defaultConfig);
   config.data = typeof(config.data) === 'string' ? JSON.parse(config.data) : config.data;
   if (!isNode) {
-    console.warn('travis-json-git-log: only on node js side');
+    var error = new Error('travis-json-git-log: only on node js side');
+    console.warn(error);
+    config.error = error;
   }
   if (!config.repo) {
     if (!config.auth) {
-      console.warn('travis-json-git-log: auth or repo is not defined');
+      var error = new Error('travis-json-git-log: auth or repo is not defined');
+      console.warn(error);
+      config.error = error;
     }
     config.repo = `https://${config.auth}@github.com/${config.repo_slug}.git`;
   }
@@ -94,6 +98,10 @@ exports.parseConfig = (config) => {
 exports.tjgl = (config, callback) => {
   config = exports.parseConfig(config);
   var context = {};
+  if (config.error) {
+    if (callback) callback(config.error, context, config);
+    return;
+  }
   async.series([
     exports.prepareDir(context, config),
     exports.clone(context, config),
@@ -108,6 +116,7 @@ exports.tjgl = (config, callback) => {
 };
 
 exports.defaultConfig = {
+  error: _.get(process, 'env.TJGL_ERROR'),
   data: _.get(process, 'env.TJGL_DATA'),
   branch: _.get(process, 'env.TJGL_BRANCH') || 'results',
   repo_slug: _.get(process, 'env.TJGL_REPO_SLUG') || _.get(process, 'env.TRAVIS_REPO_SLUG'),
