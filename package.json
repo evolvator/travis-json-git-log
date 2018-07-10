@@ -1,6 +1,6 @@
 {
   "name": "travis-json-git-log",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Write json log into git repo.",
   "license": "MIT",
   "scripts": {

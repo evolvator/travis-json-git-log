@@ -96,7 +96,9 @@ exports.parseConfig = (config) => {
 };
 
 exports.tjgl = (config, callback) => {
-  config = exports.parseConfig(config);
+  if (!config.error) {
+    config = exports.parseConfig(config);
+  }
   var context = {};
   if (config.error) {
     if (callback) callback(config.error, context, config);
